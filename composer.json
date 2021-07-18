@@ -50,13 +50,13 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"CoDevelopers\\WpSkeleton\\Config\\": "config",
-			"CoDevelopers\\WpSkeleton\\Console\\": "console"
+			"Codevelopers\\Fullstack\\Config\\": "config",
+			"Codevelopers\\Fullstack\\Console\\": "console"
 		}
 	},
 	"scripts": {
-		"post-create-project-cmd": "CoDevelopers\\WpSkeleton\\Config\\ComposerSetup::postCreateProject",
-		"post-install-cmd": "CoDevelopers\\WpSkeleton\\Config\\ComposerSetup::postInstall",
-		"post-update-cmd": "CoDevelopers\\WpSkeleton\\Config\\ComposerSetup::postUpdate"
+		"post-create-project-cmd": "Codevelopers\\Fullstack\\Config\\ComposerSetup::postCreateProject",
+		"post-install-cmd": "Codevelopers\\Fullstack\\Config\\ComposerSetup::postInstall",
+		"post-update-cmd": "Codevelopers\\Fullstack\\Config\\ComposerSetup::postUpdate"
 	}
 }
