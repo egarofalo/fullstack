@@ -1,0 +1,10 @@
+# Ignore .env config file
+/config/.env
+# Ignore vendor folder
+/vendor/
+# Ignore composer.lock
+composer.lock
+# Ignore WordPress files and folder
+/public/.htaccess
+/public/wp
+/public/content
