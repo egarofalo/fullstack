@@ -4,7 +4,7 @@ return [
     # Disable WordPress debug mode
     'DEBUG' => true,
     # MySQL connection parameters
-    'DB_NAME' => 'wptest',
+    'DB_NAME' => 'dbname',
     'DB_USER' => 'root',
     'DB_PASSWORD' => '',
     'DB_HOST' => 'localhost',

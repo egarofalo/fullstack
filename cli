@@ -4,11 +4,11 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config/env.php';
 
-use CoDevelopers\WpSkeleton\Console\DatabaseCreate;
-use CoDevelopers\WpSkeleton\Console\DatabaseExport;
-use CoDevelopers\WpSkeleton\Console\DatabaseImport;
-use CoDevelopers\WpSkeleton\Console\HelloWorld;
-use CoDevelopers\WpSkeleton\Console\ThemeUpdate;
+use Codevelopers\Fullstack\Console\DatabaseCreate;
+use Codevelopers\Fullstack\Console\DatabaseExport;
+use Codevelopers\Fullstack\Console\DatabaseImport;
+use Codevelopers\Fullstack\Console\HelloWorld;
+use Codevelopers\Fullstack\Console\ThemeUpdate;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
