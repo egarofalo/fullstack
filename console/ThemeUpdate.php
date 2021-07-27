@@ -29,15 +29,15 @@ class ThemeUpdate extends Command
             ->setHelp('Change the name of the theme and optionally another information such as Version, Description, etc.');
     }
 
-    private function updateFolderName(
+    private function renameThemeDirectory(
         OutputInterface $output,
-        string $oldFolderName,
-        string $newFolderName
+        string $themeDirectory,
+        string $newThemeDirectory
     ) {
-        if ($this->filesystem->exists("{$this->themesDir}/{$newFolderName}")) {
+        if ($this->filesystem->exists("{$this->themesDir}/{$newThemeDirectory}")) {
             $output->writeln([
                 '<error>',
-                "The folder {$newFolderName} already exists in the themes directory.",
+                "The folder {$newThemeDirectory} already exists in the themes directory.",
                 'Choose another theme name.',
                 '</error>',
             ]);
@@ -47,8 +47,8 @@ class ThemeUpdate extends Command
 
         try {
             $this->filesystem->rename(
-                "{$this->themesDir}/{$oldFolderName}",
-                "{$this->themesDir}/{$newFolderName}"
+                "{$this->themesDir}/{$themeDirectory}",
+                "{$this->themesDir}/{$newThemeDirectory}"
             );
         } catch (IOException $e) {
             $output->writeln([
@@ -64,13 +64,59 @@ class ThemeUpdate extends Command
         return true;
     }
 
+    private function updateStyleFileContents(array $styleFileContents, string $metadataKey, ?string $metadataValue)
+    {
+        if (empty($metadataValue)) {
+            return $styleFileContents;
+        }
+
+        $metadataPattern = "/^(\s*\*?\s*{$metadataKey}\s*:).+$/i";
+        $updated = false;
+
+        foreach ($styleFileContents as $key => $line) {
+            if (preg_match($metadataPattern, $line)) {
+                $styleFileContents[$key] = preg_replace(
+                    $metadataPattern,
+                    "$1 {$metadataValue}",
+                    $line
+                );
+                $updated = true;
+
+                break;
+            }
+        }
+
+        if (!$updated) {
+            $themeNamePattern = "/^(\s*\*?\s*)Theme +Name(\s*:).+$/i";
+
+            foreach ($styleFileContents as $key => $line) {
+                if (preg_match($themeNamePattern, $line)) {
+                    array_splice(
+                        $styleFileContents,
+                        $key + 1,
+                        0,
+                        preg_replace(
+                            $themeNamePattern,
+                            "$1{$metadataKey}$2 {$metadataValue}",
+                            $line
+                        )
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return $styleFileContents;
+    }
+
     private function updateThemeMetadata(
         OutputInterface $output,
-        string $folderName,
+        string $themeDirectory,
         $metadataKey,
         $metadataValue
     ) {
-        $styleFileContents = @file("{$this->themesDir}/{$folderName}/style.css");
+        $styleFileContents = @file("{$this->themesDir}/{$themeDirectory}/style.css");
 
         if ($styleFileContents === false) {
             $output->writeln([
@@ -83,23 +129,11 @@ class ThemeUpdate extends Command
             return false;
         }
 
-        $pattern = "/^(\s*\*?\s*{$metadataKey}\s*:).+$/i";
-
-        foreach ($styleFileContents as $key => $line) {
-            if (preg_match($pattern, $line)) {
-                $styleFileContents[$key] = preg_replace(
-                    $pattern,
-                    "$1 {$metadataValue}",
-                    $line
-                );
-
-                break;
-            }
-        }
+        $styleFileContents = $this->updateStyleFileContents($styleFileContents, $metadataKey, $metadataValue);
 
         try {
             $this->filesystem->dumpFile(
-                "{$this->themesDir}/{$folderName}/style.css",
+                "{$this->themesDir}/{$themeDirectory}/style.css",
                 $styleFileContents
             );
         } catch (IOException $e) {
@@ -116,13 +150,13 @@ class ThemeUpdate extends Command
         return true;
     }
 
-    private function getThemeNameResponse(InputInterface $input, OutputInterface $output)
+    private function getThemeDirectory(InputInterface $input, OutputInterface $output)
     {
         $slugify = new Slugify();
         $helper = $this->getHelper('question');
         $output->writeln('');
-        $question = new Question('Please enter the theme name (or theme folder name) to be change: ');
-        $themeName = $helper->ask($input, $output, $question);
+        $themeNameQuestion = new Question('Please enter the Theme Name (or theme directory name) to be change: ');
+        $themeName = $helper->ask($input, $output, $themeNameQuestion);
 
         while (empty($themeName)) {
             $output->writeln([
@@ -130,77 +164,131 @@ class ThemeUpdate extends Command
                 'You must enter a theme name.',
                 '</error>',
             ]);
-            $themeName = $helper->ask($input, $output, $question);
+            $themeName = $helper->ask($input, $output, $themeNameQuestion);
         }
 
-        $folderName = $slugify->slugify($themeName);
+        $themeDirectory = $slugify->slugify($themeName);
 
-        if (!$this->filesystem->exists("{$this->themesDir}/{$folderName}")) {
+        while (!$this->filesystem->exists("{$this->themesDir}/{$themeDirectory}")) {
             $output->writeln([
                 '<error>',
-                "The folder {$folderName} not exists in the themes directory.",
-                'Enter another theme name.',
+                "The folder {$themeDirectory} not exists in the themes directory.",
                 '</error>',
             ]);
-            $themeName = false;
+
+            $themeDirectoryQuestion = new Question('Enter the theme directory name instead of theme name: ');
+            $themeDirectory = $helper->ask($input, $output, $themeDirectoryQuestion);
+
+            while (empty($themeDirectory)) {
+                $output->writeln([
+                    '<error>',
+                    'You must enter a theme directory name.',
+                    '</error>',
+                ]);
+                $themeDirectory = $helper->ask($input, $output, $themeDirectoryQuestion);
+            }
         }
 
-        return $themeName;
+        return $themeDirectory;
     }
 
-    private function getNewThemeNameResponse(InputInterface $input, OutputInterface $output)
+    private function getAnswer(InputInterface $input, OutputInterface $output, string $question)
     {
         $helper = $this->getHelper('question');
-        $question = new Question('Please enter the new theme name: ');
-        $newThemeName = $helper->ask($input, $output, $question);
-
-        while (empty($newThemeName)) {
-            $output->writeln([
-                '<error>',
-                'You must enter a theme name.',
-                '</error>',
-            ]);
-            $newThemeName = $helper->ask($input, $output, $question);
-        }
-
-        return $newThemeName;
+        $output->writeln('');
+        $questionObj = new Question($question);
+        return $helper->ask($input, $output, $questionObj);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $slugify = new Slugify();
-        $themeName = $this->getThemeNameResponse($input, $output);
+        $themeDirectory = $this->getThemeDirectory($input, $output);
+        $newThemeDirectory = $themeDirectory;
+        $newThemeName = $this->getAnswer($input, $output, 'Please enter the new Theme Name (keep blank to skip): ');
 
-        if (empty($themeName)) {
-            return;
+        // update theme directory
+        if (!empty($newThemeName)) {
+            $newThemeDirectory = $slugify->slugify($newThemeName);
+
+            if (!$this->renameThemeDirectory($output, $themeDirectory, $newThemeDirectory)) {
+                return;
+            }
         }
 
-        $folderName = $slugify->slugify($themeName);
-        $newThemeName = $this->getNewThemeNameResponse($input, $output);
-        $newFolderName = $slugify->slugify($newThemeName);
+        $metadata = [
+            [
+                'metadata' => 'Theme Name',
+                'value' => $newThemeName,
+            ],
+            [
+                'metadata' => 'Theme URI',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Theme URI" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Author',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Author" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Author URI',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Author URI" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Description',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Description" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Requires at least',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Requires at least" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Tested up to',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Tested up to" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Requires PHP',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Requires PHP" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Version',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Version" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'License',
+                'value' => $this->getAnswer($input, $output, 'Please enter "License" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'License URI',
+                'value' => $this->getAnswer($input, $output, 'Please enter "License URI" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Text Domain',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Text Domain" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Domain Path',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Domain Path" metadata (keep blank to skip): '),
+            ],
+            [
+                'metadata' => 'Tags',
+                'value' => $this->getAnswer($input, $output, 'Please enter "Tags" metadata (keep blank to skip): '),
+            ]
+        ];
 
-        if (!$this->updateFolderName($output, $folderName, $newFolderName)) {
-            return;
+        foreach ($metadata as $item) {
+            if (!$this->updateThemeMetadata(
+                $output,
+                $newThemeDirectory,
+                $item['metadata'],
+                $item['value']
+            )) {
+                $output->writeln([
+                    '<error>',
+                    "The \"{$item['metadata']}\" metadata was not updated in the style.css file.",
+                    'Do it manually after the update process finish.',
+                    '</error>',
+                ]);
+            }
         }
-
-        if (!$this->updateThemeMetadata(
-            $output,
-            $newFolderName,
-            'Theme Name',
-            $newThemeName
-        )) {
-            $output->writeln([
-                '<error>',
-                'The Theme Name was not updated in the style.css file.',
-                'Do it manually after the update process finish.',
-                '</error>',
-            ]);
-        }
-
-        $output->writeln([
-            '<info>',
-            'Theme updated successfully.',
-            '</info>',
-        ]);
     }
 }
