@@ -22,6 +22,37 @@ Download the project from github or using the <code>git clone</code> command, an
 
 Install [Composer](https://getcomposer.org/download/) on your computer and once installed run in the cli <code>composer create-project codevelopers/fullstack</code>. If you want to install the project in a different folder, specify the name of the destination folder <code>composer create-project codevelopers/fullstack dest</code>.
 
+## Framework structure
+
+```sh
+fullstack/                   # → Root folder
+├── config/                  # → Sensitive information here
+│   ├── ComposerSetup.php    # → Composer script
+│   ├── env.dev.php          # → Development or testing environment configuration file
+│   ├── env.dist.php         # → Production environment configuration file
+│   ├── env.local.php        # → Local environment configuration file
+│   ├── env.php              # → Environment configuration file
+│   └── salts.php            # → Wordpress Authentication unique keys and salts
+├── console/                 # → Useful and powerful console commands
+│   ├── DatabaseCreate.php   # → database:create console command
+│   ├── DatabaseExport.php   # → database:export console command
+│   ├── DatabaseImport.php   # → database:import console command
+│   ├── HellowWorld.php      # → hello-world console command
+│   └── ThemeUpdate.php      # → theme:update console command
+├── database/                # → Database backup files
+├── public/                  # → Public folder
+│   ├── content              # → wp-content WordPress folder
+│   ├── wp                   # → WordPress core files
+│   ├── index.php            # → WordPress front controller
+│   └── wp-config.php        # → WordPress configuration file
+├── .gitignore               # → Changelog file
+├── CHANGELOG.md             # → Changelog file
+├── cli                      # → Run console commands in the CLI
+├── composer.json            # → Composer file
+├── LICENSE                  # → License file
+└── README.md                # → This file
+```
+
 ## Install plugins
 
 Search Wordpress plugins in the repository [WordPress Packagist](https://wpackagist.org/) and then run (in the cli) into the project root <code>composer require wpackagist-plugin/plugin-name</code> to install the plugin wich you choosed. You can also install the plugins from the WordPress dashboard.
@@ -52,7 +83,7 @@ Fullstack comes with a command line console (cli), with three commands:
 -   <code>php cli database:create</code> to create the database in mysql server.
 -   <code>php cli database:export</code> to dump the database structure and data in a self contained sql file.
 -   <code>php cli database:import</code> to import the database structure and data in the last generated sql file.
--   <code>php cli theme:update</code> to change themes name and folder.
+-   <code>php cli theme:update</code> to change themes metadata in the `style.css` theme stylesheet.
 
 Remember that the cli command must be used only in the local or development environment, as it uses dev packages installed with composer.
 
