@@ -47,7 +47,7 @@ Additionally, you must set the [Wordpress Authentication unique keys and salts](
 
 ## Console commands
 
-Fullstack comes with a command line console (cli), with three commands:
+Fullstack comes with a command line console (cli), with the following commands:
 
 -   <code>php cli database:create</code> to create the database in mysql server.
 -   <code>php cli database:export</code> to dump the database structure and data in a self contained sql file.
