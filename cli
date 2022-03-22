@@ -4,12 +4,15 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config/env.php';
 
+use Symfony\Component\Console\Application;
+use Codevelopers\Fullstack\Console\HelloWorld;
+use Codevelopers\Fullstack\Console\ThemeUpdate;
+use Codevelopers\Fullstack\Console\PluginInstall;
 use Codevelopers\Fullstack\Console\DatabaseCreate;
 use Codevelopers\Fullstack\Console\DatabaseExport;
 use Codevelopers\Fullstack\Console\DatabaseImport;
-use Codevelopers\Fullstack\Console\HelloWorld;
-use Codevelopers\Fullstack\Console\ThemeUpdate;
-use Symfony\Component\Console\Application;
+use Codevelopers\Fullstack\Console\PluginUninstall;
+use Codevelopers\Fullstack\Console\PluginUpdate;
 
 $application = new Application();
 
@@ -19,5 +22,8 @@ $application->add(new DatabaseCreate());
 $application->add(new DatabaseExport());
 $application->add(new DatabaseImport());
 $application->add(new ThemeUpdate());
+$application->add(new PluginInstall());
+$application->add(new PluginUninstall());
+$application->add(new PluginUpdate());
 
 $application->run();

@@ -7,7 +7,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class ComposerSetup
 {
-    private static $output = 'Configuring Wordpress Skeleton...';
+    private static $output = 'Configuring Fullstack...';
     private static $fileSystem = null;
 
     private static function createFileSystem()

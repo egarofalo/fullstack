@@ -78,12 +78,15 @@ Additionally, you must set the [Wordpress Authentication unique keys and salts](
 
 ## Console commands
 
-Fullstack comes with a command line console (cli), with three commands:
+Fullstack comes with a command line console (cli), with the following commands:
 
 -   <code>php cli database:create</code> to create the database in mysql server.
 -   <code>php cli database:export</code> to dump the database structure and data in a self contained sql file.
 -   <code>php cli database:import</code> to import the database structure and data in the last generated sql file.
 -   <code>php cli theme:update</code> to change themes metadata in the `style.css` theme stylesheet.
+-   <code>php cli plugin:install</code> to install WordPress plugins using composer.
+-   <code>php cli plugin:uninstall</code> to uninstall WordPress plugins using composer.
+-   <code>php cli plugin:update</code> to update WordPress plugins using composer.
 
 Remember that the cli command must be used only in the local or development environment, as it uses dev packages installed with composer.
 
